@@ -1,0 +1,28 @@
+{
+  "total_runs": 126,
+  "payload_sizes": {
+    "min": 0,
+    "max": 108000,
+    "mean": 6149.0,
+    "over_80k": 3
+  },
+  "latency": {
+    "min": 0.09,
+    "p50": 0.23,
+    "p75": 0.33,
+    "p95": 71.7,
+    "p99": 232.04,
+    "max": 237.82,
+    "mean": 13.43
+  },
+  "false_positive_rate": "0.00%",
+  "false_negative_rate": "5.26%",
+  "detection_accuracy": "97.62%",
+  "throughput_per_second": 74.46,
+  "timestamp": "2026-01-18T09:10:22.957791",
+  "meets_enterprise_standards": {
+    "latency_p99_under_200ms": false,
+    "fp_rate_under_1_percent": true,
+    "detection_over_95_percent": true
+  }
+}
