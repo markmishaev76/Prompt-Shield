@@ -75,4 +75,4 @@ print(result.is_safe, result.overall_risk)
 
 **Proprietary License** — All rights reserved. See [LICENSE](LICENSE) for terms.
 
-Free for evaluation. Commercial use requires a license. Contact: [your-email@example.com]
+Free for evaluation. Commercial use requires a license. Contact: mark.mishaev@gmail.com
