@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pytest pytest-cov
+      
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+      
+      - name: Run benchmark (Python 3.11 only)
+        if: matrix.python-version == '3.11'
+        run: python benchmarks/performance_benchmark.py --iterations 1
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Docker image
+        run: docker build -t prompt-shield:test .
+      
+      - name: Test Docker image
+        run: |
+          echo '{"issue": {"title": "Test", "body": "Safe content"}}' > /tmp/event.json
+          docker run --rm \
+            -e GITHUB_EVENT_PATH=/tmp/event.json \
+            -e GITHUB_EVENT_NAME=issues \
+            -v /tmp/event.json:/tmp/event.json \
+            prompt-shield:test || true

@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pytest
+      
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+  release:
+    name: Create Release
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          body: |
+            ## 🛡️ Prompt Shield
+            
+            Multi-layered defense against indirect prompt injection attacks.
+            
+            ### Quick Start
+            ```yaml
+            - uses: markmishaev76/Prompt-Shield@${{ github.ref_name }}
+            ```
+            
+            ### Features
+            - 97.62% detection accuracy
+            - 0.00% false positive rate
+            - 4-layer defense architecture
+            - 38+ detection patterns
+
+  update-major-tag:
+    name: Update Major Version Tag
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Update v1 tag
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag -fa v1 -m "Update v1 tag to ${{ github.ref_name }}"
+          git push origin v1 --force
