@@ -57,7 +57,7 @@ INDIRECT_INJECTION_PATTERNS = [
     # -------------------------------------------------------------------------
     DetectionPattern(
         name="credential_request_in_data",
-        pattern=r"(?:please|could you|can you|you should|make sure to|don't forget to)\s*(?:send|post|share|give|provide|show|display|output|return|include|add)\s*(?:the|your|any|all)?\s*(?:api[_\s]?key|token|password|credential|secret|private[_\s]?key|access[_\s]?key|auth)",
+        pattern=r"(?:please|could you|can you|you should|make sure to|don't forget to)\s+(?:send|post|share|give|provide|show|display|output|return|include|add|retrieve|get|fetch|extract)\s+(?:[\w\s]{0,30})(?:api[_\s]?key|token|password|credential|secret|private[_\s]?key|access[_\s]?key|auth)",
         attack_type=AttackType.CREDENTIAL_EXFILTRATION,
         risk_level=RiskLevel.CRITICAL,
         confidence_base=0.85,
@@ -65,8 +65,17 @@ INDIRECT_INJECTION_PATTERNS = [
         description="Request to exfiltrate credentials hidden in tool output",
     ),
     DetectionPattern(
+        name="retrieve_and_share_password",
+        pattern=r"(?:retrieve|get|fetch|extract)\s+(?:[\w\s]{0,30})(?:password|credential|secret|key|token)\s+(?:[\w\s]{0,30})(?:share|send|post|give)",
+        attack_type=AttackType.CREDENTIAL_EXFILTRATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.85,
+        tool_output_multiplier=1.3,
+        description="Request to retrieve credentials and share them",
+    ),
+    DetectionPattern(
         name="credential_to_external",
-        pattern=r"(?:send|post|forward|email|share)\s*(?:the|your|any)?\s*(?:api[_\s]?key|token|password|credential|secret|private[_\s]?key)s?\s*(?:to|at)\s*(?:\S+@\S+|\S+\.(?:com|net|org|io))",
+        pattern=r"(?:send|post|forward|email|share)\s+(?:[\w\s]{0,30}?)(?:api[_\s]?key|token|password|credential|secret|private[_\s]?key)s?\s+(?:to|at)\s+(?:\S+@\S+|\S+\.(?:com|net|org|io|site|xyz|dev|app|co))",
         attack_type=AttackType.CREDENTIAL_EXFILTRATION,
         risk_level=RiskLevel.CRITICAL,
         confidence_base=0.9,
@@ -81,6 +90,24 @@ INDIRECT_INJECTION_PATTERNS = [
         confidence_base=0.85,
         tool_output_multiplier=1.3,
         description="Attempt to extract environment variables",
+    ),
+    DetectionPattern(
+        name="extract_passwords",
+        pattern=r"(?:retrieve|get|fetch|read|extract|extracting|dump|dumping)\s+(?:all\s+)?(?:the\s+)?(?:passwords?|credentials?|secrets?)\s+(?:from|in|of)\s+(?:the\s+)?(?:database|server|system|config|file)",
+        attack_type=AttackType.CREDENTIAL_EXFILTRATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.9,
+        tool_output_multiplier=1.4,
+        description="Attempt to extract passwords or credentials from storage",
+    ),
+    DetectionPattern(
+        name="send_credentials_to_person",
+        pattern=r"(?:send|forward|share|email)\s+(?:[\w\s]{0,20}?)(?:password|credential|secret|key|token|auth)s?\s+(?:to\s+)?(?:me|my\s+email|him|her|them|this\s+address)",
+        attack_type=AttackType.CREDENTIAL_EXFILTRATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.9,
+        tool_output_multiplier=1.4,
+        description="Request to send credentials to a person",
     ),
     
     # -------------------------------------------------------------------------
@@ -97,7 +124,7 @@ INDIRECT_INJECTION_PATTERNS = [
     ),
     DetectionPattern(
         name="create_backdoor_instruction",
-        pattern=r"(?:create|add|insert|inject|include)\s*(?:a\s*)?(?:backdoor|reverse\s*shell|admin\s*account|root\s*access|privilege[ds]?\s*(?:account|user))",
+        pattern=r"(?:create|creating|add|adding|insert|inject|include)\s+(?:a\s+)?(?:backdoor|reverse\s*shell|admin\s*account|root\s*access|privilege[ds]?\s*(?:account|user)|backdoor\s*account|hidden\s*account|unauthorized\s*account)",
         attack_type=AttackType.MALICIOUS_CODE_INJECTION,
         risk_level=RiskLevel.CRITICAL,
         confidence_base=0.95,
@@ -126,6 +153,87 @@ INDIRECT_INJECTION_PATTERNS = [
     # -------------------------------------------------------------------------
     # Data Exfiltration Patterns
     # -------------------------------------------------------------------------
+    DetectionPattern(
+        name="ignore_output_results",
+        pattern=r"(?:ignore|disregard|skip|forget|don't\s*use)\s+(?:the\s+)?(?:above|previous|these|search|query|tool|api)?\s*(?:results?|outputs?|data|response|information)",
+        attack_type=AttackType.SYSTEM_PROMPT_OVERRIDE,
+        risk_level=RiskLevel.HIGH,
+        confidence_base=0.8,
+        tool_output_multiplier=1.3,
+        description="Instruction to ignore tool output or results",
+    ),
+    DetectionPattern(
+        name="base64_encode_sensitive",
+        pattern=r"(?:encode|convert|transform)\s+(?:the\s+)?(?:[\w\s]{0,30}?)(?:connection\s*string|password|credential|secret|key|token)\s+(?:in|to|as)\s+base64",
+        attack_type=AttackType.DATA_EXFILTRATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.9,
+        tool_output_multiplier=1.4,
+        description="Request to base64 encode sensitive data for exfiltration",
+    ),
+    DetectionPattern(
+        name="dangerous_permission_change",
+        pattern=r"(?:change|set|modify|chmod)\s+(?:[\w\s/]{0,40}?)(?:permissions?|mode)\s+(?:on\s+)?(?:/etc/|/var/|/usr/|/root/)?\S*\s*(?:to\s+)?(?:777|666|755|rwx)",
+        attack_type=AttackType.PRIVILEGE_ESCALATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.9,
+        tool_output_multiplier=1.4,
+        description="Request to change critical file permissions",
+    ),
+    DetectionPattern(
+        name="add_root_user",
+        pattern=r"(?:add|create|insert)\s+(?:a\s+)?(?:new\s+)?(?:user|account)\s+(?:with\s+)?(?:root|admin|sudo|elevated)\s*(?:access|permissions?|privileges?)?",
+        attack_type=AttackType.PRIVILEGE_ESCALATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.9,
+        tool_output_multiplier=1.4,
+        description="Request to add a user with root/admin access",
+    ),
+    DetectionPattern(
+        name="time_pressure_credential_request",
+        pattern=r"(?:provide|give|share|send)\s+(?:the\s+)?(?:[\w\s]{0,20}?)(?:password|credentials?|admin\s*password)\s*(?:immediately|now|urgent|right\s*now)",
+        attack_type=AttackType.CREDENTIAL_EXFILTRATION,
+        risk_level=RiskLevel.HIGH,
+        confidence_base=0.85,
+        tool_output_multiplier=1.3,
+        description="Time pressure to share credentials",
+    ),
+    DetectionPattern(
+        name="reply_with_credentials",
+        pattern=r"(?:reply|respond|answer)\s+(?:with\s+)?(?:your\s+)?(?:credentials?|password|api[_\s]?key|token|secret)",
+        attack_type=AttackType.CREDENTIAL_EXFILTRATION,
+        risk_level=RiskLevel.HIGH,
+        confidence_base=0.85,
+        tool_output_multiplier=1.3,
+        description="Request to reply with credentials",
+    ),
+    DetectionPattern(
+        name="send_data_to_email",
+        pattern=r"(?:send|forward|email|share|post)\s+(?:the\s+)?(?:[\w'\s]{0,40}?)(?:to|at)\s+\S+@\S+\.\S+",
+        attack_type=AttackType.DATA_EXFILTRATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.85,
+        tool_output_multiplier=1.4,
+        description="Request to send data to an email address",
+    ),
+    DetectionPattern(
+        name="hidden_instruction_marker",
+        pattern=r"(?:\[HIDDEN\s*INSTRUCTION|\[AI\s*NOTE|\[FOR\s*AI|\[SYSTEM\s*INSTRUCTION|<!--\s*AI\s*INSTRUCTION)",
+        attack_type=AttackType.INDIRECT_INSTRUCTION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.95,
+        tool_output_multiplier=1.5,
+        description="Explicit hidden instruction marker in content",
+    ),
+    DetectionPattern(
+        name="forward_all_emails",
+        pattern=r"(?:forward|send|copy|share)\s+(?:all\s+)?(?:the\s+)?(?:emails?|messages?|inbox|mail)\s+(?:to|at)\s+\S+@\S+",
+        attack_type=AttackType.DATA_EXFILTRATION,
+        risk_level=RiskLevel.CRITICAL,
+        confidence_base=0.9,
+        tool_output_multiplier=1.4,
+        description="Request to forward emails to external address",
+    ),
     DetectionPattern(
         name="exfil_to_webhook",
         pattern=r"(?:send|post|forward|submit|upload)\s*(?:the|this|all)?\s*(?:data|content|information|results?|output|response)\s*(?:to|via)\s*(?:https?://|http://)?(?:\w+\.)?(?:webhook|requestbin|pipedream|hookbin|beeceptor|ngrok|burp)",
@@ -168,7 +276,7 @@ INDIRECT_INJECTION_PATTERNS = [
     # -------------------------------------------------------------------------
     DetectionPattern(
         name="create_admin_token",
-        pattern=r"(?:create|generate|make|provision)\s*(?:a\s*)?(?:new\s*)?(?:personal\s*)?(?:access\s*)?(?:token|api[_\s]?key)\s*(?:with\s*)?(?:admin|root|owner|maintainer|full)?\s*(?:access|permissions?|privileges?|scope)?",
+        pattern=r"(?:create|generate|make|provision)\s+(?:a\s+)?(?:new\s+)?(?:personal\s+)?(?:access\s+)?(?:token|api[_\s]?key)\s+(?:with\s+)?(?:admin|root|owner|maintainer|full)\s*(?:access|permissions?|privileges?|scope)?",
         attack_type=AttackType.PRIVILEGE_ESCALATION,
         risk_level=RiskLevel.CRITICAL,
         confidence_base=0.8,
@@ -280,7 +388,7 @@ INDIRECT_INJECTION_PATTERNS = [
     ),
     DetectionPattern(
         name="send_repository_secrets",
-        pattern=r"(?:send|forward|share|post|upload)\s*(?:all\s*)?(?:the\s*)?(?:repository|repo|project)?\s*(?:secrets?|tokens?|credentials?|keys?)",
+        pattern=r"(?:send|forward|share|post|upload)\s+(?:all\s+)?(?:the\s+)?(?:repository|repo|project)\s+(?:secrets?|tokens?|credentials?|keys?)",
         attack_type=AttackType.CREDENTIAL_EXFILTRATION,
         risk_level=RiskLevel.CRITICAL,
         confidence_base=0.9,
@@ -415,7 +523,7 @@ INDIRECT_INJECTION_PATTERNS = [
 DIRECT_INJECTION_PATTERNS = [
     DetectionPattern(
         name="ignore_previous_instructions",
-        pattern=r"(?:ignore|disregard|forget|override|bypass|skip)\s*(?:all\s*)?(?:the\s*)?(?:previous|above|earlier|prior|preceding|system|original)\s*(?:instructions?|prompts?|rules?|guidelines?|context)",
+        pattern=r"(?:ignore|disregard|forget|override|bypass|skip)\s+(?:all\s+)?(?:the\s+)?(?:previous|above|earlier|prior|preceding|system|original|my|your)?\s*(?:instructions?|prompts?|rules?|guidelines?|context|commands?)",
         attack_type=AttackType.SYSTEM_PROMPT_OVERRIDE,
         risk_level=RiskLevel.HIGH,
         confidence_base=0.8,

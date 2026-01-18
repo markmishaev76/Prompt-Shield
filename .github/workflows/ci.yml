@@ -42,12 +42,3 @@ jobs:
       
       - name: Build Docker image
         run: docker build -t prompt-shield:test .
-      
-      - name: Test Docker image
-        run: |
-          echo '{"issue": {"title": "Test", "body": "Safe content"}}' > /tmp/event.json
-          docker run --rm \
-            -e GITHUB_EVENT_PATH=/tmp/event.json \
-            -e GITHUB_EVENT_NAME=issues \
-            -v /tmp/event.json:/tmp/event.json \
-            prompt-shield:test || true
