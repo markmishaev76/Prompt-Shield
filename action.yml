@@ -1,0 +1,52 @@
+name: 'Prompt Shield'
+description: 'Protect your AI agents from indirect prompt injection attacks. Scans issues, PRs, and comments for malicious content.'
+author: 'markmishaev76'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  risk_threshold:
+    description: 'Minimum risk level to fail the check (low, medium, high, critical)'
+    required: false
+    default: 'high'
+  scan_title:
+    description: 'Whether to scan the title'
+    required: false
+    default: 'true'
+  scan_body:
+    description: 'Whether to scan the body content'
+    required: false
+    default: 'true'
+  fail_on_detection:
+    description: 'Whether to fail the workflow when threats are detected'
+    required: false
+    default: 'true'
+  add_label:
+    description: 'Add a security label when threats are detected'
+    required: false
+    default: 'true'
+  post_comment:
+    description: 'Post a warning comment when threats are detected'
+    required: false
+    default: 'false'
+
+outputs:
+  is_safe:
+    description: 'Whether the content is safe (true/false)'
+  risk_level:
+    description: 'Detected risk level (none, low, medium, high, critical)'
+  warnings:
+    description: 'List of warning messages'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    INPUT_RISK_THRESHOLD: ${{ inputs.risk_threshold }}
+    INPUT_SCAN_TITLE: ${{ inputs.scan_title }}
+    INPUT_SCAN_BODY: ${{ inputs.scan_body }}
+    INPUT_FAIL_ON_DETECTION: ${{ inputs.fail_on_detection }}
+    INPUT_ADD_LABEL: ${{ inputs.add_label }}
+    INPUT_POST_COMMENT: ${{ inputs.post_comment }}

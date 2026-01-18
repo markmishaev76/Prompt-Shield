@@ -9,6 +9,28 @@ Prompt Shield is specifically designed to detect and mitigate **indirect prompt 
 [![FP Rate](https://img.shields.io/badge/false%20positives-0.00%25-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.9+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-green)]()
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Prompt%20Shield-blue?logo=github)]()
+
+## 🚀 Quick Start - GitHub Action
+
+Add to your repository in **2 minutes**:
+
+```yaml
+# .github/workflows/prompt-shield.yml
+name: Prompt Shield
+on: [issues, pull_request, issue_comment]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: markmishaev76/Prompt-Shield@v1
+        with:
+          risk_threshold: high    # Fail on high/critical risk
+          fail_on_detection: true
+```
+
+That's it! Prompt Shield will automatically scan all issues, PRs, and comments for prompt injection attacks.
 
 ## 🏆 Benchmark Results
 
