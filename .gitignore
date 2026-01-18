@@ -73,3 +73,9 @@ Thumbs.db
 # Project specific
 *.log
 .venv/
+
+# Private/commercial documents
+docs/EVALUATION_KIT.md
+docs/LANDING_PAGE.md
+docs/OUTREACH_TEMPLATES.md
+docs/PITCH_DECK.md

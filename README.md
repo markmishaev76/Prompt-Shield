@@ -68,6 +68,7 @@ print(result.is_safe, result.overall_risk)
 
 - [Quick Start](docs/QUICKSTART.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Design](docs/DESIGN.md)
 - [Integration Guide](docs/INTEGRATION.md)
 
 ## License
