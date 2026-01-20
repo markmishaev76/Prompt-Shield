@@ -2,8 +2,7 @@
 
 **Multi-layered defense against indirect prompt injection attacks for AI agents**
 
-[![Detection Accuracy](https://img.shields.io/badge/detection-97.62%25-brightgreen)](https://github.com/markmishaev76/Prompt-Shield)
-[![False Positives](https://img.shields.io/badge/false%20positives-0.00%25-brightgreen)](https://github.com/markmishaev76/Prompt-Shield)
+[![Detection Accuracy](https://img.shields.io/badge/detection-97%25+-brightgreen)](https://github.com/markmishaev76/Prompt-Shield)
 [![License](https://img.shields.io/badge/license-Proprietary-blue)](LICENSE)
 
 ---
@@ -74,9 +73,9 @@ Tested against 200+ malicious and benign payloads:
 
 | Metric | Result | Target |
 |--------|--------|--------|
-| **Detection Accuracy** | 97.62% | ≥95% |
-| **False Positive Rate** | 0.00% | <1% |
-| **Latency (p99)** | 232ms | <500ms |
+| **Detection Accuracy** | 97%+ | ≥95% |
+| **False Positive Rate** | <1% | <1% |
+| **Latency (p99)** | <250ms | <500ms |
 
 ---
 

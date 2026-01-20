@@ -39,9 +39,9 @@
 
 | Metric | Result | Enterprise Target |
 |--------|--------|-------------------|
-| Detection Accuracy | **97.62%** | >95% |
-| False Positive Rate | **0.00%** | <1% |
-| Latency (p99) | **232ms** | <200ms |
+| Detection Accuracy | **97%+** | >95% |
+| False Positive Rate | **<1%** | <1% |
+| Latency (p99) | **<250ms** | <200ms |
 | Throughput | **74 req/s** | - |
 
 *Benchmarked against enterprise-grade security standards.*
