@@ -1,4 +1,4 @@
-name: 'Prompt Shield'
+name: 'Prompt Shield Scan'
 description: 'Protect your AI agents from indirect prompt injection attacks. Scans issues, PRs, and comments for malicious content.'
 author: 'markmishaev76'
 
