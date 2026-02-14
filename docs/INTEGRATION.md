@@ -6,8 +6,9 @@ This guide explains how to integrate Prompt Shield with GitLab and GitHub.
 
 1. [GitLab Integration](#gitlab-integration)
 2. [GitHub Integration](#github-integration)
-3. [Local Testing](#local-testing)
-4. [API Reference](#api-reference)
+3. [GitHub Agentic Workflows](#github-agentic-workflows)
+4. [Local Testing](#local-testing)
+5. [API Reference](#api-reference)
 
 ---
 
@@ -217,6 +218,217 @@ def handle_github_webhook():
     
     return "OK", 200
 ```
+
+---
+
+## GitHub Agentic Workflows
+
+This repository uses **GitHub Agentic Workflows** (gh-aw) — AI-powered automation workflows written in natural language using markdown files.
+
+### What Are Agentic Workflows?
+
+Agentic Workflows are AI agents that run on GitHub Actions, triggered by repository events or schedules. They use Claude AI to perform complex tasks like:
+- Triaging and labeling issues
+- Synchronizing documentation with code changes
+- Analyzing test coverage and creating improvement PRs
+- Generating daily status reports
+
+### Active Workflows
+
+This repository includes four agentic workflows:
+
+#### 1. Issue Triage (`.github/workflows/issue-triage.md`)
+
+**Trigger:** When issues are opened or reopened
+
+**What it does:**
+- Reads issue title, body, and existing labels
+- Classifies into categories: `bug`, `enhancement`, `documentation`, `security`, `detection-pattern`, `integration`, `performance`, `question`
+- Assigns priority: `critical`, `high`, `medium`, `low`
+- Posts acknowledgment comment with classification and initial observations
+
+**Use case:** Automatically organizes incoming issues, reducing manual triage work.
+
+#### 2. Documentation Sync (`.github/workflows/docs-sync.md`)
+
+**Trigger:** Push to main branch
+
+**What it does:**
+- Analyzes code changes in `src/`, `action.yml`, `Dockerfile`, dependencies, examples
+- Compares against documentation files (README.md, docs/\*.md, examples/)
+- Identifies mismatches between code and documentation
+- Creates pull request with documentation updates if needed
+
+**Use case:** Keeps documentation automatically aligned with code changes, preventing drift.
+
+#### 3. Test Improvement (`.github/workflows/test-improvement.md`)
+
+**Trigger:** Weekly (Monday)
+
+**What it does:**
+- Analyzes current test coverage across unit, integration, and e2e tests
+- Identifies untested modules, edge cases, and detection patterns
+- Creates focused PR adding one high-value test per week
+- Follows existing pytest patterns and conventions
+
+**Use case:** Continuously improves test coverage without overwhelming maintainers.
+
+#### 4. Daily Repo Status (`.github/workflows/daily-repo-status.md`)
+
+**Trigger:** Daily
+
+**What it does:**
+- Summarizes activity: issues, PRs, commits, releases
+- Reports detection pattern health (false positives/negatives)
+- Checks CI/CD status and security concerns
+- Lists action items needing maintainer attention
+- Creates issue with formatted report
+
+**Use case:** Provides maintainers with a daily overview of repository health.
+
+### Technical Architecture
+
+````markdown
+┌──────────────────────────────────────────────────┐
+│ GitHub Event (issue, push, schedule)             │
+└──────────────────┬───────────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────────┐
+│ Workflow Lock File (*.lock.yml)                  │
+│ - Compiled from markdown source                  │
+│ - Contains full GitHub Actions YAML              │
+└──────────────────┬───────────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────────┐
+│ Claude AI Engine                                 │
+│ - Reads workflow instructions from .md file      │
+│ - Analyzes repository context                    │
+│ - Uses GitHub MCP tools for API access           │
+└──────────────────┬───────────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────────┐
+│ Safe Outputs (Structured Actions)                │
+│ - add-labels, add-comment                        │
+│ - create-pull-request, create-issue              │
+└──────────────────┬───────────────────────────────┘
+                   │
+                   ▼
+┌──────────────────────────────────────────────────┐
+│ GitHub API Updates                               │
+│ - Labels applied, comments posted                │
+│ - PRs/issues created with proper metadata        │
+└──────────────────────────────────────────────────┘
+````
+
+### Key Features
+
+**Natural Language Workflows**
+- Workflows are written in markdown with YAML frontmatter
+- Instructions are plain English, making them easy to review and modify
+- No complex GitHub Actions YAML syntax required
+
+**Security-First Design**
+- Runs in sandboxed Agent Workflow Firewall (AWF) environment
+- Explicit permissions defined in frontmatter
+- Safe outputs prevent arbitrary API calls
+- All actions validated and restricted
+
+**Claude AI Integration**
+- Powered by Claude Sonnet for sophisticated reasoning
+- Access to GitHub API via Model Context Protocol (MCP) tools
+- Can read code, analyze patterns, and make informed decisions
+
+**Compilation to Lock Files**
+- Markdown workflows compile to `.lock.yml` files
+- Lock files are the actual GitHub Actions workflows that run
+- Version-controlled and auditable
+
+### How to Modify Workflows
+
+1. **Edit the markdown file:**
+   ```bash
+   # Example: modify issue triage workflow
+   vim .github/workflows/issue-triage.md
+   ```
+
+2. **Compile to lock file:**
+   ```bash
+   gh aw compile issue-triage
+   ```
+
+3. **Test locally (optional):**
+   ```bash
+   gh aw run issue-triage --event issues --payload test-payload.json
+   ```
+
+4. **Commit both files:**
+   ```bash
+   git add .github/workflows/issue-triage.md
+   git add .github/workflows/issue-triage.lock.yml
+   git commit -m "Update issue triage workflow"
+   ```
+
+### Permissions Model
+
+Each workflow declares minimal permissions in frontmatter:
+
+```yaml
+permissions:
+  contents: read      # Read repository files
+  issues: read        # Read issues
+  pull-requests: read # Read PRs
+```
+
+Write permissions are granted implicitly through safe outputs:
+
+```yaml
+safe-outputs:
+  add-labels:         # Can add labels to issues/PRs
+  add-comment:        # Can post comments
+    max: 1           # Limited to 1 comment per run
+  create-pull-request: # Can create PRs
+    labels: [automated, documentation]  # Auto-labels
+```
+
+This ensures workflows can only perform explicitly authorized actions.
+
+### Comparison: GitHub Action vs Agentic Workflow
+
+| Feature | GitHub Action | Agentic Workflow |
+|---------|---------------|------------------|
+| **Language** | YAML, Shell | Natural language (markdown) |
+| **Logic** | Explicit steps | AI reasoning |
+| **Context awareness** | Limited to inputs | Full repository understanding |
+| **Adaptability** | Hardcoded rules | Context-sensitive decisions |
+| **Maintenance** | Manual updates | Self-documenting |
+| **Use case** | Deterministic automation | Complex triage, analysis, writing |
+
+**When to use GitHub Actions:** Build, test, deploy, deterministic checks
+
+**When to use Agentic Workflows:** Triage, documentation, analysis, reporting
+
+### Prerequisites
+
+To work with agentic workflows, install the `gh-aw` CLI extension:
+
+```bash
+gh extension install github/gh-aw
+```
+
+Initialize a repository for agentic workflows:
+
+```bash
+gh aw init
+```
+
+### Learn More
+
+- [GitHub Agentic Workflows Documentation](https://github.com/github/gh-aw)
+- [Workflow Agent Configuration](.github/agents/agentic-workflows.agent.md)
+- [MCP GitHub Tools](https://github.com/modelcontextprotocol/servers/tree/main/src/github)
 
 ---
 

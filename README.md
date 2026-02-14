@@ -206,6 +206,21 @@ Prompt Shield is one layer in a **defense-in-depth strategy**, not a silver bull
 
 ---
 
+## 🤖 AI-Powered Repository Automation
+
+This repository uses **GitHub Agentic Workflows** powered by Claude to automate maintenance tasks:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| **Issue Triage** | New issues | Automatically labels and categorizes issues |
+| **Documentation Sync** | Push to main | Keeps docs aligned with code changes |
+| **Test Improvement** | Weekly | Analyzes coverage gaps and creates test PRs |
+| **Daily Repo Status** | Daily | Creates status reports for maintainers |
+
+These AI agents help maintain code quality and documentation consistency. Learn more in the [Integration Guide](docs/INTEGRATION.md#github-agentic-workflows).
+
+---
+
 ## 📚 Documentation
 
 - [Quick Start Guide](docs/QUICKSTART.md)
