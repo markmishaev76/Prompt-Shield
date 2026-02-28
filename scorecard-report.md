@@ -4,7 +4,7 @@
 
 - **Repository**: `/home/runner/work/Prompt-Shield/Prompt-Shield`
 - **Languages**: python
-- **Assessed**: 2026-02-28 10:53 UTC
+- **Assessed**: 2026-02-28 11:42 UTC
 - **Checks**: 13/31 passed
 
 ## Summary
