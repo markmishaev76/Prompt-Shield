@@ -1,6 +1,6 @@
 # Prompt Shield 🛡️
 
-[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmarkmishaev76%2FPrompt-Shield%2Fmain%2Fscorecard-badge.json)](https://github.com/markmishaev76/ai-harness-scorecard)
+[![AI Harness Scorecard](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmarkmishaev76%2FPrompt-Shield%2Fmain%2Fscorecard-badge.json)](scorecard-report.md)
 
 **Multi-layered defense against indirect prompt injection attacks for AI agents**
 
