@@ -6,8 +6,8 @@ Allows fine-grained control over each layer's behavior and thresholds.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Literal, Optional
+from pydantic import BaseModel, Field, field_validator
 
 from prompt_shield.types import TrustLevel, RiskLevel
 
@@ -39,14 +39,14 @@ class TrustedFilterConfig(BaseModel):
 
 class DataFilterConfig(BaseModel):
     """Configuration for Layer 2: DataFilter (Sanitization)."""
-    
+
     enabled: bool = True
-    
+
     # Sanitization mode
-    mode: str = "remove"  # "remove", "mask", "escape", "tag"
-    
+    mode: Literal["remove", "mask", "escape", "tag"] = "remove"
+
     # Aggressiveness
-    aggressiveness: str = "balanced"  # "minimal", "balanced", "aggressive"
+    aggressiveness: Literal["minimal", "balanced", "aggressive"] = "balanced"
     
     # What to sanitize
     remove_instructions: bool = True
@@ -59,19 +59,19 @@ class DataFilterConfig(BaseModel):
     preserve_documentation: bool = True
     
     # Size limits
-    max_content_length: int = 100000
-    
+    max_content_length: int = Field(default=100000, ge=0)
+
     # Custom patterns to remove (regex)
     custom_removal_patterns: List[str] = Field(default_factory=list)
 
 
 class DetectorConfig(BaseModel):
     """Configuration for Layer 3: Indirect Injection Detector."""
-    
+
     enabled: bool = True
-    
+
     # Detection thresholds
-    confidence_threshold: float = 0.7
+    confidence_threshold: float = Field(default=0.7, ge=0.0, le=1.0)
     min_risk_level: RiskLevel = RiskLevel.LOW
     
     # Detector components
@@ -81,8 +81,8 @@ class DetectorConfig(BaseModel):
     
     # ML model settings
     ml_model_name: str = "microsoft/deberta-v3-base"
-    ml_batch_size: int = 8
-    ml_max_length: int = 512
+    ml_batch_size: int = Field(default=8, gt=0)
+    ml_max_length: int = Field(default=512, gt=0)
     
     # Pattern matching settings
     pattern_confidence_boost: float = 0.2
@@ -104,15 +104,15 @@ class DetectorConfig(BaseModel):
 
 class PromptFenceConfig(BaseModel):
     """Configuration for Layer 4: Prompt Fencing."""
-    
+
     enabled: bool = True
-    
+
     # Fence format
-    fence_format: str = "xml"  # "xml", "markdown", "json", "delimiter"
-    
+    fence_format: Literal["xml", "markdown", "json", "delimiter"] = "xml"
+
     # Cryptographic settings
     use_signatures: bool = True
-    signature_algorithm: str = "hmac-sha256"
+    signature_algorithm: Literal["hmac-sha256", "hmac-sha512"] = "hmac-sha256"
     
     # Fence delimiters
     trusted_prefix: str = "<<<TRUSTED_CONTENT>>>"
@@ -128,16 +128,16 @@ class PromptFenceConfig(BaseModel):
 
 class LoggingConfig(BaseModel):
     """Logging configuration."""
-    
+
     enabled: bool = True
-    log_level: str = "INFO"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     log_detections: bool = True
     log_sanitizations: bool = True
     log_processing_times: bool = True
-    
+
     # Sensitive data handling
     redact_content: bool = True
-    max_logged_content_length: int = 200
+    max_logged_content_length: int = Field(default=200, ge=0)
 
 
 class Config(BaseModel):
@@ -156,9 +156,9 @@ class Config(BaseModel):
     
     # Performance settings
     enable_caching: bool = True
-    cache_ttl_seconds: int = 3600
-    max_concurrent_requests: int = 100
-    request_timeout_seconds: float = 30.0
+    cache_ttl_seconds: int = Field(default=3600, ge=0)
+    max_concurrent_requests: int = Field(default=100, gt=0)
+    request_timeout_seconds: float = Field(default=30.0, gt=0.0)
     
     # Default risk thresholds
     block_threshold: RiskLevel = RiskLevel.HIGH
